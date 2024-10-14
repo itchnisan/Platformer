@@ -1,0 +1,8 @@
+body{
+    text-align: center;
+}
+
+#board{
+    background-color: green;
+    border-bottom: 2px solid rgb(0, 47, 0);
+}
