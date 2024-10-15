@@ -1,140 +1,135 @@
-let board = document.getElementById("board");
-
+let board;
 let boardWidth = 750;
-let boardHeight =  250;
-
+let boardHeight = 250;
 let context;
 
-
-//player
+// Joueur
 let pHeight = 94;
 let pWidth = 88;
 let pX = 50;
 let pY = boardHeight - pHeight;
 let pImg;
 
-//obstacle
+let player = {
+    x: pX,
+    y: pY,
+    width: pWidth,
+    height: pHeight
+};
+
+// Obstacles
 let obstacleArray = [];
 
 let obstacle1Width = 34;
 let obstacle2Width = 69;
 let obstacle3Width = 102;
-
 let obstacleHeight = 70;
 let obstacleX = 700;
 let obstacleY = boardHeight - obstacleHeight;
 
-//repeat for other 
-let obstacle1Img;
+let obstacle1Img, obstacle2Img, obstacle3Img;
 
-//physics
-let velocityx = -8;
+// Physique
+let velocityX = -8;
 let velocityY = 0;
-let gravity = .4;
+let gravity = 0.4;
 
 let gameOver = false;
 let score = 0;
 
-let  player = {
-    x : pX,
-    y : pY,
-    width : pWidth,
-    height : pHeight
-}
-
-
-window.onload = function(){
-
+window.onload = function() {
+    board = document.getElementById("board");
     board.height = boardHeight;
     board.width = boardWidth;
-
     context = board.getContext("2d");
 
-
-
-    context.fillStyle="red";
-    context.fillRect(pX,pY,pWidth,pHeight);
-
     pImg = new Image();
-    pImg.src ="./img/idlle.png";
-    pImg.onload = function(){
-    context.drawImage(pImg,pX,pY,pWidth,pHeight);
-    }
+    pImg.src = "./img/idlle.png";
+    pImg.onload = function() {
+        context.drawImage(pImg, player.x, player.y, player.width, player.height);
+    };
 
     obstacle1Img = new Image();
-    obstacle1Img.src ="./img/obstacle1.png";
-
+    obstacle1Img.src = "./img/obstacle1.png";
 
     requestAnimationFrame(update);
-    setInterval(placeObstacle,1000);
-    document.addEventListener("keydown",moveDirectionPlayer);
+    setInterval(placeObstacle, 1000);
+    document.addEventListener("keydown", moveDirectionPlayer);
+};
 
-}
-
-function update(){
+function update() {
     requestAnimationFrame(update);
-    if(gameOver){
-        return;
-    }
+    if (gameOver) return;
 
-    context.clearRect(0,0,boardWidth,boardHeight);
-    //player
+    context.clearRect(0, 0, boardWidth, boardHeight);
+
+    // Joueur
     velocityY += gravity;
-    player.y = Math.min(player.y + velocityY,pY);
-    context.drawImage(pImg,pX,pY,pWidth,pHeight);
-    //obstacle
-    for(let i = 0; i < obstacleArray.length;i++){
+    player.y = Math.min(player.y + velocityY, pY);
+    context.drawImage(pImg, player.x, player.y, player.width, player.height);
+
+    // Obstacles
+    for (let i = 0; i < obstacleArray.length; i++) {
         let obstacle = obstacleArray[i];
-        obstacle.x += velocityx;
-        context.drawImage(obstacle.img,obstacle.x,obstacle.width,obstacle.height);
+        obstacle.x += velocityX;
+        context.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
 
-        if(detectCollision(player,obstacle)){
+        // Détection de collision
+        if (detectCollision(player, obstacle)) {
             gameOver = true;
-
         }
     }
+
+    // Score
+    context.fillStyle = "black";
+    context.font = "20px Courier";
+    score++;
+    context.fillText(score, 5, 20);
+
+    // Retirer les obstacles hors de l'écran
+    //obstacleArray = obstacleArray.filter(obstacle => obstacle.x + obstacle.width > 0);
 }
 
-function moveDirectionPlayer(e){
-    if(gameOver){
-        return;
+function moveDirectionPlayer(e) {
+    if (gameOver) return;
+
+    if ((e.code === "Space" || e.code === "ArrowUp") && player.y === pY) {
+        velocityY = -10; // Saut
     }
-
-    if((e.code == "Space" || e.code == "ArrowUp") && player.y == pY){
-        velocityY = -10;
-
-    }
-
 }
 
-function placeObstacle(){
-    if(gameOver){
-        return;
-    }
+function placeObstacle() {
+    if (gameOver) return;
+
     let obstacle = {
-        img : null,
-        x : obstacleX,
-        y : obstacleY,
-        width : null,
-        height : obstacleHeight
-    }
+        img: null,
+        x: obstacleX,
+        y: obstacleY,
+        width: null,
+        height: obstacleHeight
+    };
 
-    let placeObstacleRandom = math.random();
-    if(placeObstacleRandom > .90){
+    let placeObstacleRandom = Math.random();
+    if (placeObstacleRandom > 0.90) {
         obstacle.img = obstacle1Img;
         obstacle.width = obstacle1Width;
-        obstacleArray.push(obstacle);
+    } else if (placeObstacleRandom > 0.70) {
+        obstacle.img = obstacle2Img;
+        obstacle.width = obstacle2Width;
+    } else {
+        obstacle.img = obstacle3Img;
+        obstacle.width = obstacle3Width;
     }
-    // else if(){
 
-    // }
+    obstacleArray.push(obstacle);
 
-    if(obstacleArray.length > 5){
+    // Limiter le nombre d'obstacles
+    if (obstacleArray.length > 5) {
         obstacleArray.shift();
     }
 }
 
-function detectCollision(a,b){
+function detectCollision(a, b) {
     return a.x < b.x + b.width &&
            a.x + a.width > b.x &&
            a.y < b.y + b.height &&
