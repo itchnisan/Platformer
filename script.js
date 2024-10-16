@@ -59,9 +59,11 @@ window.onload = function() {
 
 function update() {
     requestAnimationFrame(update);
-    if (gameOver) return;
+    if (gameOver){ 
+        return;
+    }
 
-    context.clearRect(0, 0, boardWidth, boardHeight);
+    context.clearRect(0, 0, board.width, board.height);
 
     // Joueur
     velocityY += gravity;
@@ -77,6 +79,10 @@ function update() {
         // Détection de collision
         if (detectCollision(player, obstacle)) {
             gameOver = true;
+            pImg.src = "./img/1.png";
+            pImg.onload = function() {
+            context.drawImage(pImg, player.x, player.y, player.width, player.height);
+            
         }
     }
 
@@ -88,6 +94,7 @@ function update() {
 
     // Retirer les obstacles hors de l'écran
     //obstacleArray = obstacleArray.filter(obstacle => obstacle.x + obstacle.width > 0);
+    }
 }
 
 function moveDirectionPlayer(e) {
@@ -96,10 +103,15 @@ function moveDirectionPlayer(e) {
     if ((e.code === "Space" || e.code === "ArrowUp") && player.y === pY) {
         velocityY = -10; // Saut
     }
+    else if (e.code == "ArrowDown" && player.y == pY) {
+        //duck
+    }
 }
 
 function placeObstacle() {
-    if (gameOver) return;
+    if (gameOver){ 
+        return;
+    }
 
     let obstacle = {
         img: null,
@@ -110,18 +122,13 @@ function placeObstacle() {
     };
 
     let placeObstacleRandom = Math.random();
-    if (placeObstacleRandom > 0.90) {
+    if (placeObstacleRandom > .90) { //10% you get cactus3
         obstacle.img = obstacle1Img;
         obstacle.width = obstacle1Width;
-    } else if (placeObstacleRandom > 0.70) {
-        obstacle.img = obstacle2Img;
-        obstacle.width = obstacle2Width;
-    } else {
-        obstacle.img = obstacle3Img;
-        obstacle.width = obstacle3Width;
+        obstacleArray.push(obstacle);
     }
 
-    obstacleArray.push(obstacle);
+    
 
     // Limiter le nombre d'obstacles
     if (obstacleArray.length > 5) {
